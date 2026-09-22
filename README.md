@@ -23,7 +23,7 @@
 | `t2` | [T2 语言建模直觉（bigram→MLP）](theory/02-languagemodel/) | ✅ |
 | `t3` | [T3 分词器（BPE）](theory/03-tokenizer/) | ✅ |
 | `t4` | [T4 Attention 与 GPT](theory/04-gpt/) | ✅ |
-| `t5` | T5 预训练（莎士比亚 mini-GPT） | ⏳ |
+| `t5` | [T5 预训练（莎士比亚 mini-GPT）](theory/05-pretrain/) | ✅ |
 | `p1` | P1 API 与 Prompt | ⏳ |
 | `p2` | P2 RAG（知识库问答） | ⏳ |
 
