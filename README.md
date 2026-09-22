@@ -20,7 +20,7 @@
 | Tag | 章 | 状态 |
 |---|---|---|
 | `t1` | [T1 autograd 与反向传播](theory/01-autograd/) | ✅ |
-| `t2` | T2 语言建模直觉（bigram→MLP） | ⏳ |
+| `t2` | [T2 语言建模直觉（bigram→MLP）](theory/02-languagemodel/) | ✅ |
 | `t3` | T3 分词器（BPE） | ⏳ |
 | `t4` | T4 Attention 与 GPT | ⏳ |
 | `t5` | T5 预训练（莎士比亚 mini-GPT） | ⏳ |
