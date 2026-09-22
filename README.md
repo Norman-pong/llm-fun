@@ -17,7 +17,7 @@ uv run python theory/01-autograd/code/engine.py   # 跑某一章代码（示例�
 
 ### 理论线
 
-- [ ] [T1 autograd 与反向传播](theory/01-autograd/)
+- [x] [T1 autograd 与反向传播](theory/01-autograd/)
 - [ ] T2 语言建模直觉（makemore）
 - [ ] T3 分词器（BPE）
 - [ ] T4 Attention 与 GPT
