@@ -42,7 +42,11 @@ def split_ids(ids: list[int], frac: float = 0.9) -> tuple[list[int], list[int]]:
 
 
 def get_batch(
-    data: torch.Tensor, block_size: int, batch_size: int, device: str, gen: torch.Generator
+    data: torch.Tensor,
+    block_size: int,
+    batch_size: int,
+    device: str,
+    gen: torch.Generator,
 ) -> tuple[torch.Tensor, torch.Tensor]:
     ix = torch.randint(0, len(data) - block_size - 1, (batch_size,), generator=gen)
     x = torch.stack([data[j : j + block_size] for j in ix.tolist()])
@@ -59,7 +63,9 @@ def lr_at(step: int, total: int, peak: float, warmup: int = 100) -> float:
 
 
 @torch.no_grad()
-def eval_loss(model: GPTModel, data: torch.Tensor, block_size: int, device: str) -> float:
+def eval_loss(
+    model: GPTModel, data: torch.Tensor, block_size: int, device: str
+) -> float:
     model.eval()
     g = torch.Generator().manual_seed(123)
     losses = []
@@ -89,18 +95,27 @@ def train(
     train_ids, val_ids = split_ids(ids)
     tr = torch.tensor(train_ids, dtype=torch.long)
     va = torch.tensor(val_ids, dtype=torch.long)
-    print(f"语料 {len(ids)} 字符 | 词表 {len(chars)} | train/val {len(train_ids)}/{len(val_ids)} | 设备 {device}")
+    print(
+        f"语料 {len(ids)} 字符 | 词表 {len(chars)} | train/val {len(train_ids)}/{len(val_ids)} | 设备 {device}"
+    )
 
     model = GPTModel(
-        vocab_size=len(chars), emb_dim=emb_dim, n_head=n_head,
-        n_layer=n_layer, block_size=block_size,
+        vocab_size=len(chars),
+        emb_dim=emb_dim,
+        n_head=n_head,
+        n_layer=n_layer,
+        block_size=block_size,
     ).to(device)
     n_params = sum(p.numel() for p in model.parameters())
     print(f"模型参数量 {n_params:,}（{n_layer}L·{emb_dim}d·{n_head}H·ctx{block_size}）")
 
-    opt = torch.optim.AdamW(model.parameters(), lr=peak_lr, weight_decay=0.1, betas=(0.9, 0.95))
+    opt = torch.optim.AdamW(
+        model.parameters(), lr=peak_lr, weight_decay=0.1, betas=(0.9, 0.95)
+    )
     gen = torch.Generator().manual_seed(seed)
     history = {"train": [], "val": [], "lr": []}
+    best_val = float("inf")
+    best_state: dict[str, torch.Tensor] = {}
     t0 = time.time()
 
     for step in range(steps):
@@ -118,6 +133,11 @@ def train(
         if (step + 1) % log_every == 0 or step == steps - 1:
             vl = eval_loss(model, va, block_size, device)
             history["val"].append({"step": step + 1, "loss": vl})
+            if vl < best_val:
+                best_val = vl
+                best_state = {
+                    k: v.detach().cpu().clone() for k, v in model.state_dict().items()
+                }
             recent = history["train"][-log_every:]
             print(
                 f"step {step + 1:5d} | train {sum(recent) / len(recent):.4f} | "
@@ -126,18 +146,35 @@ def train(
 
     wall = time.time() - t0
     final_val = history["val"][-1]["loss"]
-    print(f"完成：{steps} 步 / {wall:.0f}s | 最终 val loss {final_val:.4f} "
-          f"| ppl {math.exp(final_val):.1f}")
-
+    best_step = min(history["val"], key=lambda v: v["loss"])["step"]
+    print(
+        f"完成：{steps} 步 / {wall:.0f}s | 最终 val loss {final_val:.4f} "
+        f"| 最优 val loss {best_val:.4f}@{best_step}（model_best.pt）"
+    )
     out_dir = RUNS / f"s{steps}_d{emb_dim}_L{n_layer}"
     out_dir.mkdir(parents=True, exist_ok=True)
     torch.save(model.state_dict(), out_dir / "model.pt")
+    torch.save(best_state, out_dir / "model_best.pt")
     (out_dir / "history.json").write_text(
-        json.dumps({"config": {
-            "steps": steps, "block_size": block_size, "batch_size": batch_size,
-            "emb_dim": emb_dim, "n_head": n_head, "n_layer": n_layer,
-            "peak_lr": peak_lr, "seed": seed, "device": device,
-        }, "n_params": n_params, **history}, ensure_ascii=False),
+        json.dumps(
+            {
+                "config": {
+                    "steps": steps,
+                    "block_size": block_size,
+                    "batch_size": batch_size,
+                    "emb_dim": emb_dim,
+                    "n_head": n_head,
+                    "n_layer": n_layer,
+                    "peak_lr": peak_lr,
+                    "seed": seed,
+                    "device": device,
+                },
+                "n_params": n_params,
+                "best": {"step": best_step, "loss": best_val},
+                **history,
+            },
+            ensure_ascii=False,
+        ),
         encoding="utf-8",
     )
     print(f"产物已存 {out_dir.relative_to(Path.cwd())}")
@@ -146,7 +183,12 @@ def train(
     model.eval()
     prompt = torch.tensor([[stoi[c] for c in "\n"]], device=device)
     print("\n[采样 temperature=0.8]")
-    print("".join(chars[i] for i in model.generate(prompt, 400, temperature=0.8, seed=seed).tolist()[0]))
+    print(
+        "".join(
+            chars[i]
+            for i in model.generate(prompt, 400, temperature=0.8, seed=seed).tolist()[0]
+        )
+    )
     return history
 
 
@@ -156,6 +198,14 @@ if __name__ == "__main__":
     ap.add_argument("--smoke", action="store_true", help="小模型冒烟：测试与 CI 用")
     args = ap.parse_args()
     if args.smoke:
-        train(steps=args.steps, block_size=128, batch_size=32, emb_dim=64, n_head=4, n_layer=2, log_every=50)
+        train(
+            steps=args.steps,
+            block_size=128,
+            batch_size=32,
+            emb_dim=64,
+            n_head=4,
+            n_layer=2,
+            log_every=50,
+        )
     else:
         train(steps=args.steps)

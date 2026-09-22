@@ -27,15 +27,21 @@ from train import RUNS, load_corpus
 
 
 def latest_run() -> Path | None:
-    """runs/ 下最新落盘的 run（按目录 mtime，命名无时间戳可排序）。"""
+    """默认加载目标：所有 run 里 val 最优者（而非最新落盘——测试产物会污染 mtime）。"""
     if not RUNS.exists():
         return None
     dirs = [d for d in RUNS.iterdir() if (d / "model.pt").exists()]
-    return max(dirs, key=lambda d: d.stat().st_mtime) if dirs else None
+
+    def best_val(d: Path) -> float:
+        h = json.loads((d / "history.json").read_text(encoding="utf-8"))
+        return min(v["loss"] for v in h["val"])
+
+    return min(dirs, key=best_val) if dirs else None
 
 
 def load_model(run_dir: Path) -> tuple[GPTModel, dict]:
-    """按 history.json 里的 config 重建模型并载入权重。"""
+    """按 history.json 里的 config 重建模型；优先载 val 最优权重 model_best.pt
+    （旧 run 无此文件时回落 model.pt，且明确提示加载的是哪个）。"""
     hist = json.loads((run_dir / "history.json").read_text(encoding="utf-8"))
     cfg = hist["config"]
     chars, _, _ = load_corpus()
@@ -46,11 +52,16 @@ def load_model(run_dir: Path) -> tuple[GPTModel, dict]:
         n_layer=cfg["n_layer"],
         block_size=cfg["block_size"],
     )
+    weights = "model_best.pt" if (run_dir / "model_best.pt").exists() else "model.pt"
     model.load_state_dict(
-        torch.load(run_dir / "model.pt", weights_only=True, map_location="cpu")
+        torch.load(run_dir / weights, weights_only=True, map_location="cpu")
     )
     model.eval()
     return model, hist
+
+
+def _weight_tag(run_dir: Path) -> str:
+    return "best" if (run_dir / "model_best.pt").exists() else "final"
 
 
 def encode_prompt(prompt: str, chars: list[str], stoi: dict[str, int]) -> torch.Tensor:
@@ -106,8 +117,8 @@ def main() -> None:
     )
     print(
         f"配置 {cfg['n_layer']}L·{cfg['emb_dim']}d·{cfg['n_head']}H·ctx{cfg['block_size']}"
+        f" | 权重 {_weight_tag(run_dir)}"
     )
-
     idx = encode_prompt(args.prompt, chars, stoi)
     print(f"\n[prompt] {args.prompt!r}")
     for t in args.temperatures or [args.temperature]:

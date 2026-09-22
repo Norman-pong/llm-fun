@@ -23,6 +23,7 @@
 |---|---|
 | `code/train.py` | 训练器：LR 调度/梯度裁剪/val 评估/产物落盘；`--smoke` 小配置 |
 | `code/sample.py` | 加载 runs/ 里训好的模型交互：续写/温度对比/列出所有 run |
+| `code/plot.py` | 把 runs/ 的 history.json 画成训练曲线 PNG（loss + LR 调度双面板） |
 | `code/test_train.py` | DoD 验收（5 项，300 步小配置，CPU ~40s） |
 | `input.txt` | tinyshakespeare 1,115,394 字符（来源 karpathy/char-rnn） |
 

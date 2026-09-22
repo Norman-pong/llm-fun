@@ -36,7 +36,10 @@ lr(step) = peak × (step+1)/warmup        step < 100（线性热身）
 ### 定期 val 评估 + 产物落盘
 
 每 500 步在验证集上评估（20 个 batch 平均），训练完把
-`model.pt + history.json（超参/曲线）` 存进 `runs/05-pretrain/`（已 gitignore）。
+`model.pt + model_best.pt + history.json（超参/曲线/best 记录）` 存进
+`runs/05-pretrain/`（已 gitignore）。其中 `model_best.pt` 是 **val 最优步**
+的快照——本例 step 1500（val 1.5284），而非最终的 step 3000（val 已回升到
+1.6705）；sample.py 默认就载这个。这也是「早停点即 val 最优点」的工程落地。
 **可复现性 = 固定 seed + 记录配置**，这是实验管理的最小闭环。
 
 ## 3. 训练配置与实测（MPS 实跑 1661s ≈ 27.7 分钟）

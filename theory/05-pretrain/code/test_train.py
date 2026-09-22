@@ -21,8 +21,14 @@ from train import eval_loss, load_corpus, lr_at, split_ids, train
 
 def _train_small() -> dict:
     return train(
-        steps=300, block_size=128, batch_size=32, emb_dim=64, n_head=4, n_layer=2,
-        peak_lr=1e-3, log_every=100,
+        steps=300,
+        block_size=128,
+        batch_size=32,
+        emb_dim=64,
+        n_head=4,
+        n_layer=2,
+        peak_lr=1e-3,
+        log_every=100,
     )
 
 
@@ -53,12 +59,19 @@ def test_val_curve_improves():
 
 def test_run_artifacts_persisted():
     _train_small()
-    run_dirs = sorted((Path(__file__).resolve().parents[3] / "runs" / "05-pretrain").glob("s300_*"))
+    run_dirs = sorted(
+        (Path(__file__).resolve().parents[3] / "runs" / "05-pretrain").glob("s300_*")
+    )
     assert run_dirs, "runs 产物未落盘"
     hist = json.loads((run_dirs[-1] / "history.json").read_text(encoding="utf-8"))
-    assert {"config", "n_params", "train", "val", "lr"} <= set(hist)
+    assert {"config", "n_params", "train", "val", "lr", "best"} <= set(hist)
     assert len(hist["train"]) == 300
     assert (run_dirs[-1] / "model.pt").exists()
+    assert (run_dirs[-1] / "model_best.pt").exists()
+    # best 记录的必须是 val 曲线上的真实最优点
+    best_on_curve = min(hist["val"], key=lambda v: v["loss"])
+    assert hist["best"]["step"] == best_on_curve["step"]
+    assert abs(hist["best"]["loss"] - best_on_curve["loss"]) < 1e-9
 
 
 def test_sample_shakespeare_style():
@@ -67,17 +80,24 @@ def test_sample_shakespeare_style():
     chars, stoi, ids = load_corpus()
     _, val_ids = split_ids(ids)
     va = torch.tensor(val_ids, dtype=torch.long)
-    run_dirs = sorted((Path(__file__).resolve().parents[3] / "runs" / "05-pretrain").glob("s300_*"))
+    run_dirs = sorted(
+        (Path(__file__).resolve().parents[3] / "runs" / "05-pretrain").glob("s300_*")
+    )
     from gpt import GPTModel
 
-    model = GPTModel(vocab_size=len(chars), emb_dim=64, n_head=4, n_layer=2, block_size=128)
+    model = GPTModel(
+        vocab_size=len(chars), emb_dim=64, n_head=4, n_layer=2, block_size=128
+    )
     model.load_state_dict(torch.load(run_dirs[-1] / "model.pt", weights_only=True))
     model.eval()
     vl = eval_loss(model, va, 128, "cpu")
     assert math.isfinite(vl) and vl < 3.2
 
     prompt = torch.tensor([[stoi["\n"]]])
-    text = "".join(chars[i] for i in model.generate(prompt, 300, temperature=0.7, seed=3).tolist()[0])
+    text = "".join(
+        chars[i]
+        for i in model.generate(prompt, 300, temperature=0.7, seed=3).tolist()[0]
+    )
     words = {"the", "and", "you", "my", "that", "is", "not", "it", "for", "his"}
     hits = sum(1 for w in words if w in text)
     assert hits >= 5, f"常见词出现太少({hits}/10): {text[:120]!r}"
