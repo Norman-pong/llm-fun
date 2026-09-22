@@ -1,30 +1,26 @@
-<!--VITE PLUS START-->
+<!--PY TOOLCHAIN START-->
 
-# Using Vite+, the Unified Toolchain for the Web
+# Python 工具链（uv）
 
-This project is using Vite+, a unified toolchain built on top of Vite, Rolldown, Vitest, tsdown, Oxlint, Oxfmt, and Vite Task. Vite+ wraps runtime management, package management, and frontend tooling in a single global CLI called `vp`. Vite+ is distinct from Vite, and it invokes Vite through `vp dev` and `vp build`. Run `vp help` to print a list of commands and `vp <command> --help` for information about a specific command.
+本项目用 uv 管理 Python 运行时与依赖，包定义在 `pyproject.toml`，锁文件 `uv.lock` 必须提交。Python 版本钉在 `.python-version`。
 
-Docs are local at `node_modules/vite-plus/docs` or online at https://viteplus.dev/guide/.
+## 常用命令
 
-## Built-in Commands vs Scripts
-
-`vp <name>` runs a built-in command. `vp run <name>` runs a `package.json` script or a `vite.config.ts` task. Scripts cannot overwrite built-ins, so `vp dev` and `vp run dev` may do different things. Check `package.json` and `vite.config.ts` first, and run `vp run <name>` when the project defines a script or task with that name.
-
-## Tool Versions
-
-Run `vp toolchain` to show versions and relationships in the active Vite+
-release. Add a tool name to select part of the graph. For example, run
-`vp toolchain vite`. Use `--global` to ignore the local `vite-plus` package. Use
-`vp why <package>` to show the package-manager dependency graph.
+```sh
+uv sync --frozen        # 按锁文件安装环境（拉取远端后先跑这个）
+uv add <pkg>            # 加稳定版依赖（不锁尝鲜版）
+uv run python <file>    # 在项目环境中运行
+uv run pytest           # 测试
+uv run ruff check .     # lint
+```
 
 ## Review Checklist
 
-- [ ] Run `vp install` after pulling remote changes and before getting started.
-- [ ] Run `vp check` and `vp test` to format, lint, type check and test changes.
-- [ ] Check if there are `vite.config.ts` tasks or `package.json` scripts necessary for validation, run via `vp run <script>`.
-- [ ] If setup, runtime, or package-manager behavior looks wrong, run `vp env doctor` and include its output when asking for help.
+- [ ] 拉取远端变更后、开工前先跑 `uv sync --frozen`。
+- [ ] 改完代码跑 `uv run ruff check .` 和覆盖改动路径的 `uv run pytest`。
+- [ ] 环境异常时跑 `uv doctor`，把输出附在求助信息里。
 
-<!--VITE PLUS END-->
+<!--PY TOOLCHAIN END-->
 
 <!--LORE PROTOCOL START-->
 
@@ -119,11 +115,11 @@ lore trace <lore-id> --json    # Trace a decision chain
 
 ## Rules
 
-- **加新依赖**：装稳定版（如 `pnpm add pkg@latest`），不锁尝鲜版。
+- **加新依赖**：装稳定版（如 `uv add pkg`），不锁尝鲜版。
 - **写注释**：只写为什么，不记历史（历史走 Lore）。
 - **改对外 API**：保持命名/参数/类型风格，不破兼容；必须破时先提案确认。
 - **写代码**：先跟项目既有风格，再跟语言官方指南。
-- **改完代码**：立刻跑对应 lint/format/typecheck（如 `oxlint`/`oxfmt`、`tsc -b`、`cargo check`/`cargo fmt`、`go fmt`）。
+- **改完代码**：立刻跑对应 lint/format/typecheck（如 `uv run ruff check`/`uv run pytest`、`cargo check`/`cargo fmt`、`go fmt`）。
 - **写新逻辑**：先找项目内既有实现/工具包并复用；第二处重复即抽公共。
 - **改导出符号**：先查全仓调用点，同步改完，不留 shim/别名。
 - **删代码**：同步删调用方/导出/文档/测试，不留死代码。

@@ -1,0 +1,22 @@
+[project]
+name = "llm-fun"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "matplotlib>=3.11.2",
+    "numpy>=2.5.3",
+    "python-dotenv>=1.2.3",
+    "torch>=2.14.0",
+]
+
+# 国内镜像（实测阿里云最快最稳；默认 PyPI 与清华源在本网络下易超时/重置）
+[[tool.uv.index]]
+url = "https://mirrors.aliyun.com/pypi/simple"
+default = true
+
+[dependency-groups]
+dev = [
+    "ipykernel>=7.3.0",
+    "pytest>=9.1.1",
+    "ruff>=0.16.8",
+]

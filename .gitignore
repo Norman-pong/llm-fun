@@ -1,0 +1,15 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# 密钥（只走 .env，不进仓库）
+.env
+
+# 学习数据与训练产物（来源和下载脚本记在章节 README）
+data/
+models/
+runs/
