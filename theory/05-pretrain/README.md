@@ -22,6 +22,7 @@
 | 文件 | 内容 |
 |---|---|
 | `code/train.py` | 训练器：LR 调度/梯度裁剪/val 评估/产物落盘；`--smoke` 小配置 |
+| `code/sample.py` | 加载 runs/ 里训好的模型交互：续写/温度对比/列出所有 run |
 | `code/test_train.py` | DoD 验收（5 项，300 步小配置，CPU ~40s） |
 | `input.txt` | tinyshakespeare 1,115,394 字符（来源 karpathy/char-rnn） |
 
@@ -30,6 +31,12 @@
 ```sh
 uv run python theory/05-pretrain/code/train.py            # 3000 步 10.7M 参数
 uv run python theory/05-pretrain/code/train.py --steps 500 --smoke   # 快速体验
+```
+
+玩训好的模型（先跑过一次训练，产物在 `runs/`）：
+
+```sh
+uv run python theory/05-pretrain/code/sample.py --prompt "ROMEO:" --temperatures 0.5 0.8
 ```
 
 ## 复盘（实现取舍与实测）
