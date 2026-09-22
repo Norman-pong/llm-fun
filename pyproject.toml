@@ -3,6 +3,7 @@ name = "llm-fun"
 version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
+    "chromadb>=1.5.9",
     "httpx>=0.28.1",
     "matplotlib>=3.11.2",
     "numpy>=2.5.3",

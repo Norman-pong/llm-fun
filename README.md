@@ -25,7 +25,7 @@
 | `t4` | [T4 Attention 与 GPT](theory/04-gpt/) | ✅ |
 | `t5` | [T5 预训练（莎士比亚 mini-GPT）](theory/05-pretrain/) | ✅ |
 | `p1` | [P1 API 与 Prompt](practice/01-api/) | ✅ |
-| `p2` | P2 RAG（知识库问答） | ⏳ |
+| `p2` | [P2 RAG（知识库问答）](practice/02-rag/) | ✅ |
 
 论文精读（3 篇，绑定 T3/T4/T5）：BPE、Attention is All You Need、GPT-2 → `papers/`。
 
