@@ -1,37 +1,41 @@
 # llm-fun
 
-个人大模型学习仓库：理论线从零实现（autograd → 语言模型 → GPT → 预训练），实践线做应用工程（API → RAG）。产出 = 笔记 + 可运行可测试的代码。
+个人大模型学习参考仓库：理论线从零实现（autograd → 语言模型 → GPT → 预训练），实践线做应用工程（API → RAG）。每章 = 参考实现 + DoD 验收测试 + 讲解笔记。
 
-> 设计依据、章节 DoD、算力策略、参考项目全景见 **[DESIGN.md](DESIGN.md)**（后续迭代先读它）。
+> 设计依据、章节 DoD、算力策略、参考项目全景见 **[DESIGN.md](DESIGN.md)**。
+
+## 如何学习（tag 导航）
+
+每章完成时打一个 tag，`git tag` 查看全部；`git checkout t2` 查看该阶段完整快照（看完 `git checkout main` 回来），或直接浏览章节目录。
+
+推荐学法（看懂参考 ≠ 学会，动手才算）：
+
+1. 看该章 README 的「资源」（主线视频/仓库）
+2. **合上参考，自己从零写**一遍
+3. 用章内 `test_*.py` 验收自己的实现（这就是「学懂了」的判据）
+4. 对照参考实现查漏，读 notes.md 的推导与踩坑
+
+## 章节状态（实现进度，完成即打 tag）
+
+| Tag | 章 | 状态 |
+|---|---|---|
+| `t1` | [T1 autograd 与反向传播](theory/01-autograd/) | ✅ |
+| `t2` | T2 语言建模直觉（bigram→MLP） | ⏳ |
+| `t3` | T3 分词器（BPE） | ⏳ |
+| `t4` | T4 Attention 与 GPT | ⏳ |
+| `t5` | T5 预训练（莎士比亚 mini-GPT） | ⏳ |
+| `p1` | P1 API 与 Prompt | ⏳ |
+| `p2` | P2 RAG（知识库问答） | ⏳ |
+
+论文精读（3 篇，绑定 T3/T4/T5）：BPE、Attention is All You Need、GPT-2 → `papers/`。
 
 ## 快速开始
 
 ```sh
-uv sync --frozen                 # 安装环境（Python 3.12，uv 管理）
-cp .env.example .env             # 填入 API key（实践线章节用，不进 git）
-uv run pytest                    # 跑全部测试
-uv run python theory/01-autograd/code/engine.py   # 跑某一章代码（示例）
+uv sync --frozen                 # 安装环境（Python 3.12，uv 管理，已配阿里云镜像）
+cp .env.example .env             # 填 API key（P1/P2 的真实调用用；不填则相关测试走本地/mock）
+uv run pytest                    # 跑全部 DoD 验收测试
+uv run python theory/01-autograd/code/mlp_demo.py   # 跑某一章 demo（各章 README 有清单）
 ```
 
-## 学习进度（唯一进度源，完成即打勾）
-
-### 理论线
-
-- [x] [T1 autograd 与反向传播](theory/01-autograd/)
-- [ ] T2 语言建模直觉（makemore）
-- [ ] T3 分词器（BPE）
-- [ ] T4 Attention 与 GPT
-- [ ] T5 预训练（莎士比亚 mini-GPT）
-
-### 实践线
-
-- [ ] P1 API 与 Prompt
-- [ ] P2 RAG（知识库问答 demo）
-
-### 论文精读
-
-- [ ] BPE（T3 时）
-- [ ] Attention is All You Need（T4 时）
-- [ ] GPT-2（T4/5 时）
-
-> Backlog（T6-T8 现代架构/微调/毕业项目，P3-P5 Agent/微调实践/部署评测）见 DESIGN.md 第 3.2 节，触发条件到了才升级。
+> Backlog（T6-T8、P3-P5）见 DESIGN.md 3.2 节，触发条件到了才升级。

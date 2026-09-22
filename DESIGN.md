@@ -8,11 +8,13 @@
 
 ## 1. 项目定位与成功标准
 
-个人学习大模型理论与工程的仓库：**理论线从零实现**（autograd → 语言模型 → GPT → 预训练），**实践线做应用工程**（API → RAG）。产出形态 = markdown 笔记 + 可运行、可测试的 Python 代码。
+个人学习大模型理论与工程的参考实现仓库：**理论线从零实现**（autograd → 语言模型 → GPT → 预训练），**实践线做应用工程**（API → RAG）。
 
-**总成功标准（可验证）**：承诺的 7 章（T1-T5、P1-P2）DoD 全部达成，且 P2 的 RAG demo 可现场演示。
+**学习模式（2026-09-22 起）**：仓库由 agent 完整迭代为「参考答案库 + 验收测试库」，每章完成时打 tag（`t1`…`p2`），学习者通过 tag 定位各阶段快照，按自身节奏学习；个人笔记在学习者自己的外部项目中维护，不写入本仓库。
 
-时间假设：业余 6h/周，7 章约 20 周。超时走各章降级路径，不硬扛。
+**总成功标准（可验证）**：7 章（T1-T5、P1-P2）全部实现完成、各自 DoD 测试全绿、每章有 tag；P2 的 RAG demo 本地可跑（生成环节除外，见 3.1 P2 备注）。
+
+时间假设：业余 6h/周，7 章学习约 20 周（学习者节奏）；实现由 agent 一次性完成。
 
 ## 2. 需求与决策记录
 
@@ -36,6 +38,7 @@
 | 进度单一来源：仅根 README checklist | 三层进度追踪违反「单一数据源」 |
 | 测试进工作流（pytest 验 DoD） | 「做完：跑最小验证，不只编译过」 |
 | 每章 1 主线 + ≤1 辅助参考 | 多参考源 = FOMO 囤资源，读不完 |
+| 学习模式改为 agent 完成制 + tag 导航 + 笔记外置 | 学习者按 tag 定位阶段快照自学，仓库保持纯参考实现；笔记在个人项目维护，避免双重维护负担 |
 
 ## 3. 课程设计
 
@@ -55,8 +58,10 @@
 
 | 章 | 时间盒 | 主参考 | DoD | 超时降级 |
 |---|---|---|---|---|
-| P1 API 与 Prompt | 2 周 | [llm-cookbook](https://github.com/datawhalechina/llm-cookbook) 必修前两门（ChatGPT Use / API） | 封装 OpenAI 兼容客户端（.env 加载/重试/结构化输出）；≥3 组 prompt 对照实验有结果记录表 | 砍对照组数量，保客户端封装 |
-| P2 RAG | 4 周 | [rag-from-scratch](https://github.com/langchain-ai/rag-from-scratch)（Part 1-9 基础部分） | 知识库问答端到端可跑（Chroma 嵌入式，零服务依赖）；≥20 条问答评测集，检索 hit-rate 与回答准确率有数字 | 砍 rerank/混合检索，保检索+生成闭环 |
+| P1 API 与 Prompt | 2 周 | [llm-cookbook](https://github.com/datawhalechina/llm-cookbook) 必修前两门（ChatGPT Use / API） | 封装 OpenAI 兼容客户端（.env 加载/重试/结构化输出），**mock 测试全绿**；prompt 对照实验脚本一键生成结果表（真实运行依赖 API key，见备注） | 砍对照组数量，保客户端封装 |
+| P2 RAG | 4 周 | [rag-from-scratch](https://github.com/langchain-ai/rag-from-scratch)（Part 1-9 基础部分） | 端到端检索问答可跑（Chroma 嵌入式 + 本地 TF-IDF embedding，**零 API key、零服务依赖**）；≥20 条评测集的检索 hit-rate 有数字；回答生成环节走 P1 客户端，无 key 时跳过（见备注） | 砍 rerank/混合检索，保检索+生成闭环 |
+
+> **P1/P2 API 依赖备注（2026-09-22）**：与「密钥只走环境变量」约束一致，agent 不持有 API key。P1 的 prompt 实验与 P2 的回答生成需学习者配好 `.env` 后运行对应脚本（脚本会输出结果表/答案）；两者的代码正确性均由无 key 的 mock/本地测试验证。
 
 论文精读只承诺 3 篇强绑定主线：BPE（T3）、Attention is All You Need（T4）、GPT-2（T4/5）。笔记放 `papers/`。
 
@@ -77,14 +82,12 @@
 
 ## 4. 章节协议
 
-- **目录命名**：`theory/NN-topic/`、`practice/NN-topic/`，零填充编号；`papers/` 一篇一文件；学到哪建到哪，不预建空目录。
-- **每章结构**：`README.md`（章模板）+ `notes.md`（推导/踩坑/心得）+ `code/*.py`（定稿代码）+ `test_*.py`（DoD 验证）+ 小数据文件。
-- **章 README 模板（三段）**：
-  1. 学习目标：含本章 DoD 原文
-  2. 资源：1 主线 + ≤1 辅助，每条带一句「为什么读」
-  3. 复盘：完成后填（学到什么、踩坑、还想深入的分支）
+- **目录命名**：`theory/NN-topic/`、`practice/NN-topic/`，零填充编号；`papers/` 一篇一文件。
+- **每章结构**：`README.md`（章模板）+ `notes.md`（agent 写的讲解笔记：推导/实验数据/踩坑，供学习者阅读）+ `code/*.py`（定稿参考实现）+ `test_*.py`（DoD 验收测试，也是学习者自己重写时的对拍标准）+ 小数据文件。
+- **tag 制**：每章完成时打 tag（`t1`…`p2`，附中文说明），学习者 `git checkout <tag>` 或直接浏览对应章节目录定位学习快照。
+- **章 README 模板（三段）**：① 学习目标（含 DoD 原文与达成情况）② 资源（1 主线 + ≤1 辅助，带一句「为什么读」）③ 复盘（agent 的实现复盘：关键取舍、实验数据）。
 - **代码形态**：`.py` + `notes.md` 为定稿（可 ruff、可 pytest）；notebook 仅探索用、提交前清空输出、不作为定稿。
-- **数据规则**：小数据文件直接进仓库；大数据进 `data/`（已 ignore）但章 README 记来源 + 下载脚本，保证可复跑。
+- **数据规则**：小数据文件直接进仓库（`names.txt`、莎士比亚语料等）；大数据进 `data/`（已 ignore）但章 README 记来源 + 下载脚本。
 - **共享代码**：第二处重复时抽公共函数；模块化抽象等第三处重复再说，暂不建 `src/` 包。
 
 ## 5. 工具链约定
@@ -169,16 +172,24 @@
 
 ## 8. 后续 agent 迭代指引
 
-**接手任何新章节的标准流程：**
+**学习模式（2026-09-22 起）：agent 完成制 + tag 导航。**
 
-1. 读 `DESIGN.md`（本文档）第 3 节找到该章的 DoD、参考与降级路径。
-2. 改前查询 lore：`lore constraints/rejected <章节路径> --json`（遵守 AGENTS.md 的 Lore 协议）。
-3. 按章节协议（第 4 节）建目录，先写章 README（目标+资源），再写 notes.md 与代码。
+**agent 完成一章的标准流程：**
+
+1. 读 `DESIGN.md` 第 3 节找到该章的 DoD、参考与降级路径。
+2. 改前查询 lore：`lore constraints/rejected <章节路径> --json`。
+3. 按章节协议（第 4 节）建目录，写章 README（目标+资源）、notes.md（讲解笔记）、参考实现与 DoD 测试。
 4. **pytest 达成 DoD** + `uv run ruff check .` 通过，缺一不可。
-5. `lore commit` 中文提交（trailer 记录本章决策），然后更新根 README 的 checklist 打勾。
+5. `lore commit` 中文提交，然后打 tag：`git tag -a <tN|pN> -m "<章名>：DoD 达成"`，并更新根 README 状态表。
 
-**改设计先改文档：** 任何结构性变更（章节增删、DoD 修改、工具链更换、预算调整）必须先更新 DESIGN.md 对应小节，并在 commit body 里说明原因；不动代码先斩后奏的变更视为无效。
+**学习者的使用方式（写在根 README，agent 保持其有效）：**
 
-**本文档修改规则：** 第 3-6 节的变更必须走 lore commit 留痕（Constraint/Rejected 如实记录）；错别字与链接修复无需。
+- `git tag` 看全部章节快照；`git checkout tN -- theory/`（或直接浏览章节目录）定位某一章。
+- 推荐学法：先看该章 README 资源 → 自己动手写 → 用章内 `test_*.py` 验收自己的实现 → 对照参考实现查漏。
+- 个人笔记在学习者自己的外部项目维护，不写入本仓库。
+
+**改设计先改文档：** 任何结构性变更（章节增删、DoD 修改、工具链更换、预算调整）必须先更新 DESIGN.md 对应小节，并在 commit body 里说明原因。
+
+**本文档修改规则：** 第 3-6 节的变更必须走 lore commit 留痕；错别字与链接修复无需。
 
 **硬件红线：** 本地不引入 CUDA-only 工具；云租超预算（第 6 节）先提案再执行。
