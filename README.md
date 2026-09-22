@@ -27,7 +27,7 @@
 | `p1` | [P1 API 与 Prompt](practice/01-api/) | ✅ |
 | `p2` | [P2 RAG（知识库问答）](practice/02-rag/) | ✅ |
 
-论文精读（3 篇，绑定 T3/T4/T5）：BPE、Attention is All You Need、GPT-2 → `papers/`。
+论文精读（3 篇，已交付）：[BPE](papers/bpe.md)（T3）、[Attention is All You Need](papers/attention-is-all-you-need.md)（T4）、[GPT-2](papers/gpt-2.md)（T4/5）。
 
 ## 快速开始
 
