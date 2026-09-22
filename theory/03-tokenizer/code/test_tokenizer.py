@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 from tokenizer import BasicTokenizer, RegexTokenizer
 
 DATA = Path(__file__).resolve().parent.parent.parent / "02-languagemodel" / "names.txt"
@@ -27,13 +28,16 @@ ROUNDTRIP_TEXTS = [
 TOY = "aaabdaaabac"  # minbpe README 的经典样例
 
 
-def _trained_basic() -> BasicTokenizer:
+@pytest.fixture(scope="module")
+def trained_basic() -> BasicTokenizer:
+    """module 级缓存：训练一次，三个用例共用（重复训练要 ~9s）。"""
     tok = BasicTokenizer()
     tok.train(DATA.read_text(encoding="utf-8")[:200_000], vocab_size=512)
     return tok
 
 
-def _trained_regex() -> RegexTokenizer:
+@pytest.fixture(scope="module")
+def trained_regex() -> RegexTokenizer:
     tok = RegexTokenizer()
     tok.train(DATA.read_text(encoding="utf-8")[:200_000], vocab_size=512)
     return tok
@@ -56,16 +60,16 @@ def test_toy_corpus_matches_expected_merges():
     assert tok.decode(tok.encode(TOY)) == TOY
 
 
-def test_roundtrip_basic():
-    tok = _trained_basic()
+def test_roundtrip_basic(trained_basic):
+    tok = trained_basic
     for text in ROUNDTRIP_TEXTS:
         ids = tok.encode(text)
         assert tok.decode(ids) == text, f"roundtrip 失败: {text!r}"
         assert all(0 <= i < 512 for i in ids)
 
 
-def test_roundtrip_regex():
-    tok = _trained_regex()
+def test_roundtrip_regex(trained_regex):
+    tok = trained_regex
     for text in ROUNDTRIP_TEXTS:
         ids = tok.encode(text)
         assert tok.decode(ids) == text, f"roundtrip 失败: {text!r}"
@@ -87,8 +91,8 @@ def test_regex_respects_chunk_boundaries():
     assert tok.decode(tok.encode(text)) == text
 
 
-def test_bpe_compresses_training_corpus():
-    tok = _trained_basic()
+def test_bpe_compresses_training_corpus(trained_basic):
+    tok = trained_basic
     text = DATA.read_text(encoding="utf-8")[:200_000]
     raw_bytes = len(text.encode("utf-8"))
     token_count = len(tok.encode(text))
@@ -97,8 +101,8 @@ def test_bpe_compresses_training_corpus():
     )
 
 
-def test_vocab_and_merge_consistency():
-    tok = _trained_basic()
+def test_vocab_and_merge_consistency(trained_basic):
+    tok = trained_basic
     assert len(tok.merges) == 512 - 256
     for (a, b), new_id in tok.merges.items():
         assert tok.vocab[new_id] == tok.vocab[a] + tok.vocab[b]

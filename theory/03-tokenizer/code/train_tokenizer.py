@@ -1,6 +1,6 @@
 """T3 demo：在 names.txt 上训练 BPE，看压缩率与学到的 token。
 
-    uv run python theory/03-tokenizer/code/train_tokenizer.py
+uv run python theory/03-tokenizer/code/train_tokenizer.py
 """
 
 from __future__ import annotations
@@ -25,7 +25,10 @@ def report(name: str, tok: BasicTokenizer | RegexTokenizer, samples: list[str]) 
         assert tok.decode(enc) == s
     # 展示一部分学到的多字节 token
     multi = [(i, v) for i, v in sorted(tok.vocab.items()) if len(v) > 2][:15]
-    print("  学到的长 token 示例:", [v.decode("utf-8", errors="replace") for _, v in multi])
+    print(
+        "  学到的长 token 示例:",
+        [v.decode("utf-8", errors="replace") for _, v in multi],
+    )
 
 
 def main() -> None:

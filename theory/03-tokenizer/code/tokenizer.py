@@ -39,7 +39,9 @@ def merge(ids: list[int], pair: tuple[int, int], new_id: int) -> list[int]:
 
 class BasicTokenizer:
     def __init__(self) -> None:
-        self.merges: dict[tuple[int, int], int] = {}  # (id,id) -> 新 id；插入序即合并优先级
+        self.merges: dict[
+            tuple[int, int], int
+        ] = {}  # (id,id) -> 新 id；插入序即合并优先级
         self.vocab: dict[int, bytes] = {i: bytes([i]) for i in range(256)}
 
     def train(self, text: str, vocab_size: int, verbose: bool = False) -> None:
@@ -56,7 +58,9 @@ class BasicTokenizer:
             self.merges[pair] = new_id
             self.vocab[new_id] = self.vocab[pair[0]] + self.vocab[pair[1]]
             if verbose:
-                print(f"merge {step:3d}: {pair} -> {new_id} ({self.vocab[new_id]!r}) 剩余 {len(ids)} ids")
+                print(
+                    f"merge {step:3d}: {pair} -> {new_id} ({self.vocab[new_id]!r}) 剩余 {len(ids)} ids"
+                )
 
     def _apply_merges(self, ids: list[int]) -> list[int]:
         """编码的核心：每次贪心应用「最早学到的」可合并对，直到没有可合并的。"""
@@ -80,7 +84,9 @@ class BasicTokenizer:
 
 
 # GPT-2 的 pre-tokenization 正则（minbpe 同款）：缩写、字母串、数字串、标点串、空白
-GPT2_SPLIT_PATTERN = r"""'s|'t|'re|'ve|'m|'ll|'d| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+"""
+GPT2_SPLIT_PATTERN = (
+    r"""'s|'t|'re|'ve|'m|'ll|'d| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+"""
+)
 
 
 class RegexTokenizer(BasicTokenizer):
