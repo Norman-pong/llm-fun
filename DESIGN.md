@@ -70,12 +70,14 @@
 
 | 项 | 触发条件 | 要点 |
 |---|---|---|
-| T6 现代架构 | T5 完成且想深入 | LLMs-from-scratch bonus（Llama 化/GQA/RoPE），MoE 可选 |
+| T6 现代架构 | T5 完成且想深入 | 手写四件：Llama 化（RoPE/RMSNorm/SwiGLU/GQA）、MoE、KV cache、滑窗注意力——延续 T4 数值对拍验收风格；资源主线 LLMs-from-scratch bonus 系列，开章时按 1 主线 + ≤1 辅助定稿（归位见下注） |
 | T7 微调与对齐 | T6 后或需要时 | LLMs-from-scratch ch6-7 + 附录 E（LoRA）；reasoning-from-scratch 选读 |
 | T8 毕业项目 | T7 后 | 想自己训→[minimind](https://github.com/jingyaogong/minimind)（云租 3090，¥10 内跑 26M 全流程）；只收口认知→[nanochat](https://github.com/karpathy/nanochat) 精读；超时降级→只精读 tokenizer/训练循环/SFT 三模块 |
 | P3 Agent | P2 后 | [agents-course](https://github.com/huggingface/agents-course) Unit1-3（有中文版）+ [MCP quickstart](https://modelcontextprotocol.io/docs/getting-started/intro) |
 | P4 微调实践 | T7 后 | 本地主线 MLX（mlx-lm LoRA）；LlamaFactory 为云上环节 |
-| P5 部署与评测 | P3/P4 后 | llama.cpp 本地服务 + promptfoo；vLLM/lm-eval-harness 云上 |
+| P5 部署与评测 | P3/P4 后 | llama.cpp 本地服务（含 KV 量化/MLA 等推理侧优化，认知即可、不从零实现）+ promptfoo；vLLM/lm-eval-harness 云上 |
+
+> **T6 知识点归位（2026-09-23，学习者点名 MoE/混合注意力/KV cache 后确认）**：手写实现进 T6——Llama 化；MoE 由「可选」升为正式要点；KV cache 在 T4 的 `generate` 上加 cache，验收=对拍无 cache 版采样输出一致；滑窗注意力=因果 mask 换带状 mask，实现增量小。推理侧优化（KV 量化、MLA）进 P5 随 llama.cpp 认知；线性注意力/SSM 混合架构（Mamba/Jamba 类）工程量大，放 T8 作精读选项。本次仅更新规划，T6 仍属 backlog，学习者到达该阶段开章时才升级为实现任务。
 
 ### 3.3 止损规则
 
