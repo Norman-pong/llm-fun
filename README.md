@@ -8,6 +8,8 @@
 
 每章完成时打一个 tag，`git tag` 查看全部；`git checkout t2` 查看该阶段完整快照（看完 `git checkout main` 回来），或直接浏览章节目录。
 
+**agent 陪跑（推荐）**：克隆本仓库后直接打开任意兼容 AGENTS.md 的 agent（ZCode / Claude Code 等），说一句「我是学习者，想学 t1」，agent 会按 [TUTOR.md](TUTOR.md) 扮演教研员：预习引导 → 陪自写 → 跑章内测试验收 → 通过后对照复盘，全程不改本仓库。所用 agent 不自动读 AGENTS.md 时，把 TUTOR.md 内容贴给它即可。
+
 推荐学法（看懂参考 ≠ 学会，动手才算）：
 
 1. 看该章 README 的「资源」（主线视频/仓库）
